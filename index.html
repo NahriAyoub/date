@@ -2,360 +2,618 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Story 💗</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tomorrow Planner 💖</title>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-
 <style>
-body{
-    margin:0;
-    height:100vh;
-    overflow:hidden;
-    font-family:-apple-system, BlinkMacSystemFont, sans-serif;
-    background:linear-gradient(180deg,#ff4d8d,#ffb6d9,#ffe3f1);
+
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  height: 100vh;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #ffd6e7 0%, #c7f9ff 50%, #fff3b0 100%);
+  background-size: 400% 400%;
+  animation: bgShift 8s ease infinite;
 }
 
-/* floating animals */
-.floating{
-    position:absolute;
-    width:100%;
-    height:100%;
-    overflow:hidden;
-    pointer-events:none;
-    z-index:0;
+@keyframes bgShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
-.pet{
-    position:absolute;
-    font-size:30px;
-    opacity:0.25;
-    animation: floatUp 12s linear infinite;
+/* ── FLOATING PARTICLES ── */
+#particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
 }
 
-@keyframes floatUp{
-    0%{transform:translateY(100vh)}
-    100%{transform:translateY(-120vh)}
+.particle {
+  position: absolute;
+  font-size: 22px;
+  opacity: 0;
+  animation: floatUp linear infinite;
+  user-select: none;
 }
 
-/* progress */
-.progress-bar{
-    position:absolute;
-    top:10px;
-    left:10px;
-    right:10px;
-    height:4px;
-    background:rgba(255,255,255,0.3);
-    border-radius:10px;
-    z-index:10;
+@keyframes floatUp {
+  0%   { transform: translateY(110vh) rotate(0deg);   opacity: 0; }
+  10%  { opacity: 0.7; }
+  90%  { opacity: 0.5; }
+  100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
 }
 
-#progress{
-    height:100%;
-    width:0%;
-    background:white;
-    transition:0.3s;
+/* ── APP WRAPPER ── */
+#app {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 18px;
 }
 
-/* app */
-#app{
-    height:100vh;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
-    position:relative;
-    z-index:2;
+/* ── CARD ── */
+.card {
+  width: 100%;
+  max-width: 440px;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-radius: 32px;
+  padding: 28px 24px 24px;
+  box-shadow: 0 30px 70px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.6) inset;
+  text-align: center;
+  animation: cardPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
 }
 
-/* card */
-.card{
-    width:100%;
-    max-width:420px;
-    height:72vh;
-    background:rgba(255,255,255,0.22);
-    backdrop-filter:blur(18px);
-    border-radius:30px;
-    padding:25px;
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    text-align:center;
-    box-shadow:0 20px 60px rgba(0,0,0,0.15);
-    transition:0.3s;
+@keyframes cardPop {
+  from { opacity: 0; transform: scale(0.88) translateY(24px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-.icon{
-    font-size:50px;
-    margin-bottom:10px;
+/* ── PROGRESS BAR ── */
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
 }
 
-.text{
-    font-size:17px;
-    line-height:1.5;
-    white-space:pre-line;
+.progress-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 99px;
+  overflow: hidden;
 }
 
-/* reply input */
-#replyBox{
-    margin-top:15px;
-    width:100%;
-    border:none;
-    border-radius:12px;
-    padding:12px;
-    font-size:14px;
-    resize:none;
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff4d8d, #ff9a3c);
+  border-radius: 99px;
+  transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
 }
 
-/* buttons */
-.actions{
-    margin-top:20px;
-    display:flex;
-    justify-content:center;
-    gap:15px;
+.progress-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ff4d8d;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
 }
 
-button{
-    border:none;
-    padding:12px 20px;
-    border-radius:30px;
-    cursor:pointer;
+/* ── STEP ICON ── */
+.step-icon {
+  font-size: 52px;
+  display: block;
+  margin: 0 auto 10px;
+  animation: iconBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+  animation-delay: 0.1s;
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.15));
+  line-height: 1;
 }
 
-#prev{background:white;color:#ff4d8d}
-#next{background:#ff4d8d;color:white}
-
-.disabled{
-    opacity:0.4;
-    pointer-events:none;
+@keyframes iconBounce {
+  from { opacity: 0; transform: scale(0.4) rotate(-15deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
-/* swipe animation */
-.swipe{
-    transform:translateY(-30px);
-    opacity:0;
+.step-icon.pulse {
+  animation: iconBounce 0.6s cubic-bezier(0.34,1.56,0.64,1) both,
+             iconPulse 2.5s ease-in-out 0.8s infinite;
 }
+
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.13); }
+}
+
+/* ── TITLE + TEXT ── */
+.step-title {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #ff4d8d;
+  margin-bottom: 8px;
+  animation: fadeSlide 0.4s ease both;
+  animation-delay: 0.15s;
+}
+
+.text {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #333;
+  white-space: pre-line;
+  animation: fadeSlide 0.4s ease both;
+  animation-delay: 0.2s;
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── OPTIONS ── */
+#options {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.option {
+  position: relative;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  line-height: 1.55;
+  font-size: 14px;
+  overflow: hidden;
+  animation: optionSlide 0.35s ease both;
+}
+
+.option:nth-child(1) { animation-delay: 0.25s; }
+.option:nth-child(2) { animation-delay: 0.38s; }
+.option:nth-child(3) { animation-delay: 0.51s; }
+
+@keyframes optionSlide {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.option:hover {
+  transform: scale(1.025) translateY(-2px);
+  box-shadow: 0 12px 28px rgba(255,77,141,0.2);
+}
+
+.option.selected {
+  background: linear-gradient(135deg, #ff4d8d, #ff7eb3);
+  color: white;
+  box-shadow: 0 12px 30px rgba(255,77,141,0.4);
+  transform: scale(1.025) translateY(-2px);
+}
+
+.option.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 18px;
+  font-weight: 900;
+  animation: checkPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes checkPop {
+  from { opacity: 0; transform: scale(0) rotate(-30deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* ── SUMMARY ROWS ── */
+.summary-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 14px;
+  padding: 10px 14px;
+  margin-top: 10px;
+  font-size: 13.5px;
+  color: #333;
+  animation: fadeSlide 0.4s ease both;
+}
+
+.summary-row:nth-child(1) { animation-delay: 0.2s; }
+.summary-row:nth-child(2) { animation-delay: 0.3s; }
+.summary-row:nth-child(3) { animation-delay: 0.4s; }
+.summary-row:nth-child(4) { animation-delay: 0.5s; }
+
+.summary-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  animation: iconSpin 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes iconSpin {
+  from { transform: rotate(-180deg) scale(0); }
+  to   { transform: rotate(0deg) scale(1); }
+}
+
+.summary-label {
+  font-weight: 700;
+  color: #ff4d8d;
+  margin-right: 4px;
+}
+
+/* ── TEXTAREA ── */
+textarea {
+  width: 100%;
+  margin-top: 14px;
+  border: 2px solid rgba(255,77,141,0.25);
+  border-radius: 16px;
+  padding: 12px 14px;
+  font-size: 14px;
+  height: 80px;
+  resize: none;
+  background: rgba(255,255,255,0.8);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+  color: #333;
+}
+
+textarea:focus {
+  border-color: #ff4d8d;
+  box-shadow: 0 0 0 3px rgba(255,77,141,0.15);
+}
+
+/* ── BUTTON ── */
+.btn {
+  position: relative;
+  margin-top: 18px;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 22px;
+  font-size: 16px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ff4d8d, #ff7eb3);
+  color: white;
+  cursor: pointer;
+  overflow: hidden;
+  letter-spacing: 0.5px;
+  box-shadow: 0 8px 24px rgba(255,77,141,0.4);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  animation: fadeSlide 0.4s ease both;
+  animation-delay: 0.45s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(255,77,141,0.5);
+}
+
+.btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* ripple */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.45);
+  transform: scale(0);
+  animation: rippleAnim 0.55s linear;
+  pointer-events: none;
+}
+
+@keyframes rippleAnim {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* ── DONE CARD ── */
+.done-card .step-icon {
+  animation: spinPop 0.8s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+@keyframes spinPop {
+  from { opacity: 0; transform: scale(0) rotate(-180deg); }
+  to   { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* ── CONFETTI ── */
+.confetti-piece {
+  position: fixed;
+  top: -10px;
+  opacity: 0;
+  border-radius: 2px;
+  animation: confettiFall linear forwards;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+@keyframes confettiFall {
+  0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
+  100% { opacity: 0; transform: translateY(110vh) rotate(720deg); }
+}
+
+/* ── SHAKE ERROR ── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+.shake { animation: shake 0.35s ease; }
+
 </style>
 </head>
-
 <body>
 
-<!-- FLOATING ANIMALS -->
-<div class="floating">
-    <div class="pet" style="left:10%">🐱</div>
-    <div class="pet" style="left:60%">🐶</div>
-    <div class="pet" style="left:40%">🐱</div>
-</div>
-
-<!-- PROGRESS -->
-<div class="progress-bar">
-    <div id="progress"></div>
-</div>
-
+<div id="particles"></div>
 <div id="app"></div>
 
 <script>
 
-let userReply = "";
+/* ── STATE ── */
+let step     = 0;
+let selected = null;
+let answers  = {};
 
-/* =========================
-   YOUR STORY (UNCHANGED TEXT)
-========================= */
-const cards = [
-
-{icon:"🎬❤️", text:`Once upon a small story...
-
-There was a girl named Oumaima
-and a developer trying to express something in a different way
-
-Hey Oumaima,
-
-I built this because sending a normal message felt boring.
-
-So instead, I decided to show you a few things I've been thinking about lately.`},
-
-{icon:"🤔", text:`After careful analysis,
-I realized something.
-
-I don't want to see you because I'm bored.
-I don't want to see you because I have nothing else to do.
-
-I want to see you because I genuinely enjoy being with you.`},
-
-{icon:"✨", text:`You have this strange ability
-to make ordinary moments feel less ordinary.
-
-A conversation becomes more interesting.
-A walk becomes more enjoyable.
-Time passes faster than expected.`},
-
-{icon:"🧠", text:`Sometimes during the day,
-something random happens.
-
-A song.
-A place.
-A joke.
-
-And somehow...
-it reminds me of you.`},
-
-{icon:"☕", text:`It's not really about coffee, food, or activities.
-
-It's about who I'm sharing those moments with.`},
-
-{icon:"❤️", text:`And honestly...
-
-I've been thinking about you more than I'd like to admit.
-
-Just in a simple real-life way.`},
-
-{icon:"🚀", text:`So here's my proposal:
-
-Let's create a few more memories.
-
-One conversation.
-One coffee.
-One dinner.
-One moment at a time.`},
-
-{icon:"🧠", text:`I want to be honest with you.
-
-I don't see you as just someone I enjoy talking to.
-
-I see you as someone I genuinely want in my life.`},
-
-{icon:"❤️", text:`I care about you more than I say out loud.
-
-And yes… there is something deeper there.
-
-Not rushed. Just real.`},
-
-{icon:"🌱", text:`I know I made mistakes in the past.
-
-I’m trying to learn from them and become better.`},
-
-{icon:"🌙", text:`I know you are going through a difficult time.
-
-You don’t have to face everything alone.
-
-I’m here with you.`},
-
-{icon:"🌍", text:`I respect your dreams and your future.
-
-And I want to support you in them.`},
-
-{icon:"🐱🐶", text:`I just want you to feel safe, respected, and not alone.`},
-
-{icon:"🌊", text:`And I’m really looking forward to Saturday at the beach.`},
-
-{icon:"❤️🐱🐶", text:`i hope that this my make you in good mood`}
+/* ── STEP DATA ── */
+const steps = [
+{
+  icon: '🌊',
+  title: null,
+  text: `☀️ TOMORROW'S ADVENTURE PLANNER ☀️\n\nHey Oumaima,\nTomorrow, at exactly 09:00, your chauffeur will arrive. 🚗👨 + 👩\n\nYour mission, should you choose to accept it:\nHelp me decide how our beach day will unfold. ❤️`,
+  options: null,
+  start: true
+},
+{
+  icon: '☕',
+  title: 'Step 1 — Breakfast',
+  text: `I pick you up at 09:00.\nBut where are we having breakfast?`,
+  options: [
+    `🥐 OPTION A — Air de Repos Bouznika (Paul)\n• Good coffee\n• Good pastries\n• Safe choice ✅`,
+    `☕ OPTION B — New coffee shop in Casablanca\n• New place\n• New experience\n• Maybe a hidden gem 😂`
+  ]
+},
+{
+  icon: '🏖️',
+  title: 'Step 2 — Beach Supplies',
+  text: `We're going to the beach.\nI'm bringing snacks.\n\nBut what team are we?`,
+  options: [
+    `🍫 OPTION A — Sweet Team\n• Cookies\n• Chocolate\n• Juice`,
+    `🥨 OPTION B — Salty Team\n• Chips\n• Sandwiches\n• Soda`,
+    `🍫🥨 OPTION C — Both Teams!\n• Cookies + Chips\n• Chocolate + Sandwiches\n• Juice + Soda`
+  ]
+},
+{
+  icon: '🍔',
+  title: 'Step 3 — Lunch',
+  text: `After the beach... what are we doing?`,
+  options: [
+    `🍔 OPTION A — McDonald's\nSimple. Easy. No complications.`,
+    `🍱 OPTION B — Bring your own food.\n\nThen back to Casablanca,\nTake a good shower together 🚿\nRelax a little, continue the adventure,\nAnd go out for dinner 🍣\nGood memories ✨`
+  ]
+},
+{
+  icon: '🎯',
+  title: 'Final Mission',
+  text: null,
+  input: true
+},
+{
+  icon: '❤️',
+  title: 'Done!',
+  text: null,
+  done: true
+}
 ];
 
-let i = 0;
+/* ── PROGRESS HTML ── */
+function progressHTML() {
+  const total   = steps.length - 2;
+  const current = Math.max(0, Math.min(step - 1, total));
+  const pct     = total > 0 ? Math.round((current / total) * 100) : 0;
+  if (step === 0 || step === steps.length - 1) return '';
+  return `<div class="progress-wrap">
+    <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+    <span class="progress-label">${current} / ${total}</span>
+  </div>`;
+}
 
-/* =========================
-   RENDER
-========================= */
-function render(){
+/* ── SUMMARY ROWS ── */
+function summaryRows() {
+  const pairs = [
+    { icon: '☕', label: 'Breakfast',    val: shortVal(answers.b1) },
+    { icon: '🏖️', label: 'Beach Snacks', val: shortVal(answers.b2) },
+    { icon: '🍔', label: 'Lunch Plan',   val: shortVal(answers.b3) }
+  ];
+  return pairs.map(p =>
+    `<div class="summary-row">
+       <span class="summary-icon">${p.icon}</span>
+       <span><span class="summary-label">${p.label}:</span> ${p.val}</span>
+     </div>`
+  ).join('');
+}
 
-    let isLast = (i === cards.length - 1);
+function shortVal(v) {
+  if (!v || v === '-') return '—';
+  return v.split('\n')[0].replace(/^[^\s]+\s/, '').replace(/OPTION [AB] — ?/, '').trim();
+}
 
-    $("#app").html(`
-        <div class="card">
-            <div class="icon">${cards[i].icon}</div>
-            <div class="text">${cards[i].text}</div>
+/* ── RENDER ── */
+function render() {
+  const s = steps[step];
 
-            ${isLast ? `
-                <textarea id="replyBox" placeholder="Write your reply 💬"></textarea>
-            ` : ``}
-
-            <div class="actions">
-                <button id="prev">⬅ Prev</button>
-                <button id="next">Next ➡</button>
-            </div>
+  if (s.done) {
+    $('#app').html(`
+      <div class="card done-card">
+        <span class="step-icon">${s.icon}</span>
+        <div class="step-title">All set for tomorrow!</div>
+        <div class="text" style="margin-bottom:4px;font-size:14px;color:#666">Here's your plan 🌊</div>
+        ${summaryRows()}
+        <div class="summary-row" style="animation-delay:0.5s">
+          <span class="summary-icon">💬</span>
+          <span><span class="summary-label">Message:</span> ${answers.msg || '—'}</span>
         </div>
-    `);
+        <div class="text" style="margin-top:16px;font-size:12.5px;color:#aaa">
+          📸 Take a screenshot and send it to Ayoub ❤️
+        </div>
+      </div>`);
+    launchConfetti();
+    return;
+  }
 
-    $("#prev").toggleClass("disabled", i === 0);
-    updateProgress();
+  if (s.input) {
+    $('#app').html(`
+      <div class="card">
+        ${progressHTML()}
+        <span class="step-icon pulse">${s.icon}</span>
+        <div class="step-title">${s.title}</div>
+        ${summaryRows()}
+        <textarea id="msg" placeholder="Add what you need — any requests? 💬"></textarea>
+        <button class="btn" id="next">Send it ❤️</button>
+      </div>`);
+    bindNext();
+    return;
+  }
+
+  $('#app').html(`
+    <div class="card">
+      ${progressHTML()}
+      <span class="step-icon${s.start ? ' pulse' : ''}">${s.icon}</span>
+      ${s.title ? `<div class="step-title">${s.title}</div>` : ''}
+      <div class="text">${encode(s.text)}</div>
+      ${s.options ? '<div id="options"></div>' : ''}
+      <button class="btn" id="next">${s.start ? '🚀 Start the Adventure' : 'Next ➜'}</button>
+    </div>`);
+
+  if (s.start) { bindStart(); return; }
+  if (s.options) { renderOptions(s.options); }
+  bindNext();
 }
 
-/* =========================
-   PROGRESS
-========================= */
-function updateProgress(){
-    let percent = ((i+1)/cards.length)*100;
-    $("#progress").css("width", percent + "%");
+/* ── OPTIONS ── */
+function renderOptions(options) {
+  const html = options.map(o =>
+    `<div class="option" data-val="${escAttr(o)}">${encode(o).replace(/\n/g, '<br>')}</div>`
+  ).join('');
+  $('#options').html(html);
+  $('.option').off('click').on('click', function () {
+    $('.option').removeClass('selected');
+    $(this).addClass('selected');
+    selected = $(this).data('val');
+  });
 }
 
-/* =========================
-   NEXT / PREV
-========================= */
-function next(){
+/* ── BUTTON RIPPLE ── */
+$(document).on('click', '.btn', function (e) {
+  const rect = this.getBoundingClientRect();
+  const size = Math.max(rect.width, rect.height);
+  const x    = e.clientX - rect.left - size / 2;
+  const y    = e.clientY - rect.top  - size / 2;
+  const r    = $('<span class="ripple">').css({ width: size, height: size, left: x, top: y });
+  $(this).append(r);
+  setTimeout(() => r.remove(), 600);
+});
 
-    if(i === cards.length - 1){
-        userReply = $("#replyBox").val() || "";
+/* ── FLOW BINDINGS ── */
+function bindStart() {
+  $('#next').off('click').on('click', function () {
+    step = 1; selected = null; render();
+  });
+}
+
+function bindNext() {
+  $('#next').off('click').on('click', function () {
+    if (step === 0) return;
+
+    if (steps[step].input) {
+      answers.msg = ($('#msg').val() || '').trim();
+    } else {
+      if (!selected) {
+        $('.card').addClass('shake');
+        setTimeout(() => $('.card').removeClass('shake'), 400);
+        return;
+      }
+      if (step === 1) answers.b1 = selected;
+      if (step === 2) answers.b2 = selected;
+      if (step === 3) answers.b3 = selected;
     }
 
-    $(".card").addClass("swipe");
-
-    setTimeout(()=>{
-        if(i < cards.length - 1){
-            i++;
-            render();
-        } else {
-            finish();
-        }
-    },200);
+    step++; selected = null; render();
+  });
 }
 
-function prev(){
-    if(i === 0) return;
-
-    $(".card").addClass("swipe");
-
-    setTimeout(()=>{
-        i--;
-        render();
-    },200);
+/* ── HELPERS ── */
+function encode(str) {
+  if (!str) return '';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
-/* =========================
-   FINAL SCREEN
-========================= */
-function finish(){
-
-    $("#app").html(`
-        <div class="card">
-            <div class="icon">💗🐱🐶</div>
-            <div class="text">
-
-Thank you for reading ❤️
-
----
-
-💬 Her reply:
-${userReply ? userReply : "No reply written yet..."}
-
----
-
-📸 Please take a screenshot of this screen
-and send it to Ayoub ❤️
-
-I will understand your answer from it 💗
-
-            </div>
-        </div>
-    `);
+function escAttr(str) {
+  return str.replace(/"/g, '&quot;');
 }
 
-/* EVENTS */
-$(document).on("click","#next",next);
-$(document).on("click","#prev",prev);
+/* ── FLOATING PARTICLES ── */
+(function () {
+  const emojis = ['🌊','☀️','🌸','✨','💖','🐚','🌺','⭐','🦋','🌼'];
+  const wrap   = document.getElementById('particles');
+
+  function spawn() {
+    const el  = document.createElement('span');
+    el.className = 'particle';
+    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+    const dur = 7 + Math.random() * 8;
+    const del = Math.random() * 5;
+    el.style.cssText = `left:${Math.random()*100}%;font-size:${14+Math.random()*16}px;animation-duration:${dur}s;animation-delay:${del}s;`;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), (dur + del) * 1000);
+  }
+
+  for (let i = 0; i < 14; i++) spawn();
+  setInterval(spawn, 900);
+})();
+
+/* ── CONFETTI ── */
+function launchConfetti() {
+  const colors = ['#ff4d8d','#ff9a3c','#38d9ff','#fff350','#a78bfa','#34d399'];
+  for (let i = 0; i < 90; i++) {
+    setTimeout(() => {
+      const el   = document.createElement('div');
+      const size = 6 + Math.random() * 10;
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left:${Math.random()*100}vw;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        width:${size}px;height:${size}px;
+        border-radius:${Math.random()>0.5?'50%':'2px'};
+        animation-duration:${1.5+Math.random()*2.5}s;
+        animation-delay:${Math.random()*1.2}s;
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 5000);
+    }, i * 20);
+  }
+}
 
 render();
-
 </script>
-
 </body>
 </html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Story 💗</title>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    height:100vh;
+    overflow:hidden;
+    font-family:-apple-system, BlinkMacSystemFont, sans-serif;
+    background:linear-gradient(180deg,#ff4d8d,#ffb6d9,#ffe3f1);
+}
+
+/* floating animals */
+.floating{
+    position:absolute;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    pointer-events:none;
+    z-index:0;
+}
+
+.pet{
+    position:absolute;
+    font-size:30px;
+    opacity:0.25;
+    animation: floatUp 12s linear infinite;
+}
+
+@keyframes floatUp{
+    0%{transform:translateY(100vh)}
+    100%{transform:translateY(-120vh)}
+}
+
+/* progress */
+.progress-bar{
+    position:absolute;
+    top:10px;
+    left:10px;
+    right:10px;
+    height:4px;
+    background:rgba(255,255,255,0.3);
+    border-radius:10px;
+    z-index:10;
+}
+
+#progress{
+    height:100%;
+    width:0%;
+    background:white;
+    transition:0.3s;
+}
+
+/* app */
+#app{
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    position:relative;
+    z-index:2;
+}
+
+/* card */
+.card{
+    width:100%;
+    max-width:420px;
+    height:72vh;
+    background:rgba(255,255,255,0.22);
+    backdrop-filter:blur(18px);
+    border-radius:30px;
+    padding:25px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.15);
+    transition:0.3s;
+}
+
+.icon{
+    font-size:50px;
+    margin-bottom:10px;
+}
+
+.text{
+    font-size:17px;
+    line-height:1.5;
+    white-space:pre-line;
+}
+
+/* reply input */
+#replyBox{
+    margin-top:15px;
+    width:100%;
+    border:none;
+    border-radius:12px;
+    padding:12px;
+    font-size:14px;
+    resize:none;
+}
+
+/* buttons */
+.actions{
+    margin-top:20px;
+    display:flex;
+    justify-content:center;
+    gap:15px;
+}
+
+button{
+    border:none;
+    padding:12px 20px;
+    border-radius:30px;
+    cursor:pointer;
+}
+
+#prev{background:white;color:#ff4d8d}
+#next{background:#ff4d8d;color:white}
+
+.disabled{
+    opacity:0.4;
+    pointer-events:none;
+}
+
+/* swipe animation */
+.swipe{
+    transform:translateY(-30px);
+    opacity:0;
+}
+</style>
+</head>
+
+<body>
+
+<!-- FLOATING ANIMALS -->
+<div class="floating">
+    <div class="pet" style="left:10%">🐱</div>
+    <div class="pet" style="left:60%">🐶</div>
+    <div class="pet" style="left:40%">🐱</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar">
+    <div id="progress"></div>
+</div>
+
+<div id="app"></div>
+
+<script>
+
+let userReply = "";
+
+/* =========================
+   YOUR STORY (UNCHANGED TEXT)
+========================= */
+const cards = [
+
+{icon:"🎬❤️", text:`Once upon a small story...
+
+There was a girl named Oumaima
+and a developer trying to express something in a different way
+
+Hey Oumaima,
+
+I built this because sending a normal message felt boring.
+
+So instead, I decided to show you a few things I've been thinking about lately.`},
+
+{icon:"🤔", text:`After careful analysis,
+I realized something.
+
+I don't want to see you because I'm bored.
+I don't want to see you because I have nothing else to do.
+
+I want to see you because I genuinely enjoy being with you.`},
+
+{icon:"✨", text:`You have this strange ability
+to make ordinary moments feel less ordinary.
+
+A conversation becomes more interesting.
+A walk becomes more enjoyable.
+Time passes faster than expected.`},
+
+{icon:"🧠", text:`Sometimes during the day,
+something random happens.
+
+A song.
+A place.
+A joke.
+
+And somehow...
+it reminds me of you.`},
+
+{icon:"☕", text:`It's not really about coffee, food, or activities.
+
+It's about who I'm sharing those moments with.`},
+
+{icon:"❤️", text:`And honestly...
+
+I've been thinking about you more than I'd like to admit.
+
+Just in a simple real-life way.`},
+
+{icon:"🚀", text:`So here's my proposal:
+
+Let's create a few more memories.
+
+One conversation.
+One coffee.
+One dinner.
+One moment at a time.`},
+
+{icon:"🧠", text:`I want to be honest with you.
+
+I don't see you as just someone I enjoy talking to.
+
+I see you as someone I genuinely want in my life.`},
+
+{icon:"❤️", text:`I care about you more than I say out loud.
+
+And yes… there is something deeper there.
+
+Not rushed. Just real.`},
+
+{icon:"🌱", text:`I know I made mistakes in the past.
+
+I’m trying to learn from them and become better.`},
+
+{icon:"🌙", text:`I know you are going through a difficult time.
+
+You don’t have to face everything alone.
+
+I’m here with you.`},
+
+{icon:"🌍", text:`I respect your dreams and your future.
+
+And I want to support you in them.`},
+
+{icon:"🐱🐶", text:`I just want you to feel safe, respected, and not alone.`},
+
+{icon:"🌊", text:`And I’m really looking forward to Saturday at the beach.`},
+
+{icon:"❤️🐱🐶", text:`i hope that this my make you in good mood`}
+];
+
+let i = 0;
+
+/* =========================
+   RENDER
+========================= */
+function render(){
+
+    let isLast = (i === cards.length - 1);
+
+    $("#app").html(`
+        <div class="card">
+            <div class="icon">${cards[i].icon}</div>
+            <div class="text">${cards[i].text}</div>
+
+            ${isLast ? `
+                <textarea id="replyBox" placeholder="Write your reply 💬"></textarea>
+            ` : ``}
+
+            <div class="actions">
+                <button id="prev">⬅ Prev</button>
+                <button id="next">Next ➡</button>
+            </div>
+        </div>
+    `);
+
+    $("#prev").toggleClass("disabled", i === 0);
+    updateProgress();
+}
+
+/* =========================
+   PROGRESS
+========================= */
+function updateProgress(){
+    let percent = ((i+1)/cards.length)*100;
+    $("#progress").css("width", percent + "%");
+}
+
+/* =========================
+   NEXT / PREV
+========================= */
+function next(){
+
+    if(i === cards.length - 1){
+        userReply = $("#replyBox").val() || "";
+    }
+
+    $(".card").addClass("swipe");
+
+    setTimeout(()=>{
+        if(i < cards.length - 1){
+            i++;
+            render();
+        } else {
+            finish();
+        }
+    },200);
+}
+
+function prev(){
+    if(i === 0) return;
+
+    $(".card").addClass("swipe");
+
+    setTimeout(()=>{
+        i--;
+        render();
+    },200);
+}
+
+/* =========================
+   FINAL SCREEN
+========================= */
+function finish(){
+
+    $("#app").html(`
+        <div class="card">
+            <div class="icon">💗🐱🐶</div>
+            <div class="text">
+
+Thank you for reading ❤️
+
+---
+
+💬 Her reply:
+${userReply ? userReply : "No reply written yet..."}
+
+---
+
+📸 Please take a screenshot of this screen
+and send it to Ayoub ❤️
+
+I will understand your answer from it 💗
+
+            </div>
+        </div>
+    `);
+}
+
+/* EVENTS */
+$(document).on("click","#next",next);
+$(document).on("click","#prev",prev);
+
+render();
+
+</script>
+
+</body>
+</html>
